@@ -17,6 +17,7 @@ export class PuebloScene extends Phaser.Scene {
     this.pickups = [];
     this.transitions = [];
     this.changingScene = false;
+    this.fireballs = this.physics.add.group();
 
     // Floor
     this.buildFloor(W, H);
@@ -68,6 +69,21 @@ export class PuebloScene extends Phaser.Scene {
 
     // Auto-save timer
     this.time.addEvent({ delay: 60000, loop: true, callback: () => EventBus.emit('auto-save') });
+
+    // === Fireball support (wand) ===
+    const onFireball = (dir) => { this.shootFireball(dir); };
+    EventBus.on('player-fireball', onFireball);
+
+    // Fireball collisions with walls
+    this.physics.add.overlap(this.fireballs, this.walls, (fb) => {
+      if (fb._emitter) fb._emitter.stop();
+      fb.disableBody(true, true);
+      this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+    });
+
+    this.events.on('shutdown', () => {
+      EventBus.off('player-fireball', onFireball);
+    });
   }
 
   buildFloor(W, H) {
@@ -216,6 +232,26 @@ export class PuebloScene extends Phaser.Scene {
     });
   }
 
+  shootFireball(direction) {
+    const dirVec = {up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+    const d = dirVec[direction] || dirVec.down;
+    const spawnX = this.player.x + d.x * 24;
+    const spawnY = this.player.y + d.y * 24;
+    const fb = this.physics.add.image(spawnX, spawnY, 'fireball');
+    fb.setDepth(20);
+    fb.body.setAllowGravity(false);
+    fb.body.setImmovable(false);
+    fb.setCollideWorldBounds(false);
+    this.fireballs.add(fb);
+    fb.body.setVelocity(d.x * 300, d.y * 300);
+    fb._life = 2000;
+    const emitter = this.add.particles(0, 0, 'fireball_particle', {
+      speed: 30, scale: {start:0.8,end:0}, lifespan: 300, frequency: 50, tint: 0xFFAA00
+    });
+    emitter.startFollow(fb);
+    fb._emitter = emitter;
+  }
+
   update() {
     if (this.dialogActive) return;
     this.player.update();
@@ -254,5 +290,18 @@ export class PuebloScene extends Phaser.Scene {
         p.destroy();
       }
     });
+
+    // Update fireballs
+    if (this.fireballs) {
+      this.fireballs.getChildren().forEach(fb => {
+        if (!fb.active) return;
+        fb._life -= 16;
+        if (fb._life <= 0) {
+          if (fb._emitter) fb._emitter.stop();
+          fb.disableBody(true, true);
+          this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+        }
+      });
+    }
   }
 }

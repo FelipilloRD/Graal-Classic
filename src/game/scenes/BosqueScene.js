@@ -19,6 +19,7 @@ export class BosqueScene extends Phaser.Scene {
     this.pickups = [];
     this.trees = [];
     this.changingScene = false;
+    this.fireballs = this.physics.add.group();
 
     this.buildFloor(W, H);
     this.buildForest();
@@ -104,7 +105,46 @@ export class BosqueScene extends Phaser.Scene {
       });
     };
     EventBus.on('player-attack', onAttack);
-    this.events.on('shutdown', () => EventBus.off('player-attack', onAttack));
+
+    // === Fireball support (wand) ===
+    const onFireball = (dir) => { this.shootFireball(dir); };
+    EventBus.on('player-fireball', onFireball);
+
+    // Fireball collisions with enemies
+    this.physics.add.overlap(this.fireballs, this.enemies, (obj1, obj2) => {
+      let fb = (obj1 && obj1.texture && obj1.texture.key === 'fireball') ? obj1 : obj2;
+      let enemy = (obj1 && obj1.texture && obj1.texture.key === 'fireball') ? obj2 : obj1;
+      if (!fb || !enemy || !fb.active || fb._hit || !enemy.active) return;
+      fb._hit = true;
+      let dir = new Phaser.Math.Vector2(enemy.x - fb.x, enemy.y - fb.y);
+      if (dir.lengthSq() === 0) dir.set(1, 0);
+      if (typeof enemy.takeDamage === 'function') enemy.takeDamage(2, dir.normalize());
+      if (fb._emitter) fb._emitter.stop();
+      fb.disableBody(true, true);
+      this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+    });
+    // Fireball collisions with bushes
+    this.physics.add.overlap(this.fireballs, this.bushes, (obj1, obj2) => {
+      let fb = (obj1 && obj1.texture && obj1.texture.key === 'fireball') ? obj1 : obj2;
+      let bush = (obj1 && obj1.texture && obj1.texture.key === 'fireball') ? obj2 : obj1;
+      if (!fb || !fb.active || fb._hit) return;
+      fb._hit = true;
+      if (bush && bush.active) bush.destroy();
+      if (fb._emitter) fb._emitter.stop();
+      fb.disableBody(true, true);
+      this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+    });
+    // Fireball collisions with walls
+    this.physics.add.overlap(this.fireballs, this.walls, (fb) => {
+      if (fb._emitter) fb._emitter.stop();
+      fb.disableBody(true, true);
+      this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+    });
+
+    this.events.on('shutdown', () => {
+      EventBus.off('player-attack', onAttack);
+      EventBus.off('player-fireball', onFireball);
+    });
 
     this.time.addEvent({ delay: 60000, loop: true, callback: () => EventBus.emit('auto-save') });
   }
@@ -242,6 +282,26 @@ export class BosqueScene extends Phaser.Scene {
     });
   }
 
+  shootFireball(direction) {
+    const dirVec = {up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+    const d = dirVec[direction] || dirVec.down;
+    const spawnX = this.player.x + d.x * 24;
+    const spawnY = this.player.y + d.y * 24;
+    const fb = this.physics.add.image(spawnX, spawnY, 'fireball');
+    fb.setDepth(20);
+    fb.body.setAllowGravity(false);
+    fb.body.setImmovable(false);
+    fb.setCollideWorldBounds(false);
+    this.fireballs.add(fb);
+    fb.body.setVelocity(d.x * 300, d.y * 300);
+    fb._life = 2000;
+    const emitter = this.add.particles(0, 0, 'fireball_particle', {
+      speed: 30, scale: {start:0.8,end:0}, lifespan: 300, frequency: 50, tint: 0xFFAA00
+    });
+    emitter.startFollow(fb);
+    fb._emitter = emitter;
+  }
+
   update() {
     if (this.dialogActive) return;
     this.player.update();
@@ -269,5 +329,18 @@ export class BosqueScene extends Phaser.Scene {
         p.destroy();
       }
     });
+
+    // Update fireballs
+    if (this.fireballs) {
+      this.fireballs.getChildren().forEach(fb => {
+        if (!fb.active) return;
+        fb._life -= 16;
+        if (fb._life <= 0) {
+          if (fb._emitter) fb._emitter.stop();
+          fb.disableBody(true, true);
+          this.time.delayedCall(10, () => { if (fb) fb.destroy(); });
+        }
+      });
+    }
   }
 }
