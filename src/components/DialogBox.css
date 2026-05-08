@@ -1,0 +1,53 @@
+.dialog-overlay {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, 90vw);
+  background: var(--panel-bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  z-index: 20;
+  animation: dialogSlideIn 0.3s ease;
+}
+
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dialog-name {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--text-gold);
+}
+
+.dialog-text {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--text-main);
+  line-height: 1.8;
+  min-height: 30px;
+}
+
+.dialog-continue {
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 8px;
+  animation: blink 1s ease infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

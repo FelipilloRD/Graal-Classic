@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --font-pixel: 'Press Start 2P', monospace;
+  --panel-bg: rgba(10, 10, 30, 0.85);
+  --panel-border: rgba(93, 181, 93, 0.5);
+  --text-main: #E8E8E8;
+  --text-accent: #5DB55D;
+  --text-gold: #FFD700;
+  --text-dim: #888;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  overflow: hidden;
+  background: #0a0a0a;
+  font-family: var(--font-pixel);
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#phaser-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#phaser-container canvas {
+  display: block;
+}
+
+.ui-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ui-overlay > * {
+  pointer-events: auto;
+}

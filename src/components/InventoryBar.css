@@ -1,0 +1,55 @@
+.inventory-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.inv-slot {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(93, 181, 93, 0.3);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.inv-slot.filled {
+  border-color: rgba(93, 181, 93, 0.6);
+  background: rgba(93, 181, 93, 0.1);
+}
+
+.inv-slot .item-icon {
+  font-size: 18px;
+  image-rendering: pixelated;
+}
+
+.inv-slot .item-qty {
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  font-family: var(--font-pixel);
+  font-size: 5px;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.inv-slot-new {
+  animation: slotPop 0.4s ease;
+}
+
+@keyframes slotPop {
+  0% { transform: scale(0.5); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

@@ -1,0 +1,66 @@
+.pause-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pause-menu {
+  background: var(--panel-bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 24px 32px;
+  text-align: center;
+  min-width: 260px;
+}
+
+.pause-title {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  color: var(--text-accent);
+  margin-bottom: 24px;
+}
+
+.pause-btn {
+  display: block;
+  width: 100%;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--text-main);
+  background: rgba(93, 181, 93, 0.1);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pause-btn:hover {
+  background: rgba(93, 181, 93, 0.25);
+  transform: scale(1.03);
+  color: var(--text-accent);
+}
+
+.pause-btn:active {
+  transform: scale(0.97);
+}
+
+.pause-btn.danger {
+  border-color: rgba(192, 57, 43, 0.5);
+  color: #E74C3C;
+}
+.pause-btn.danger:hover {
+  background: rgba(192, 57, 43, 0.2);
+  color: #FF6B6B;
+}
